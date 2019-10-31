@@ -12,7 +12,9 @@ var app = express();
 
 // mongoose
 const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/tripadvisor');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/tripadvisor', {
+    useNewUrlParser:true, useUnifiedTopology: true
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
