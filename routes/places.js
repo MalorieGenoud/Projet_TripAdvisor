@@ -16,29 +16,13 @@ router.get('/places/:id/comments', function(req, res, next) {
     res.send('place\'s comments');
 });
 
-router.get('/places/?rating=lowest', function(req, res, next) {
-    res.send('place\'s rating');
-});
-
-router.get('/places/?rating=average', function(req, res, next) {
-    res.send('place\'s rating');
-});
-
-router.get('/places/?rating=maximum', function(req, res, next) {
-    res.send('place\'s rating');
-});
-
 // POST
-router.get('/places/', function(req, res, next) {
+router.post('/places/', function(req, res, next) {
     res.send('create places');
 });
 
 router.post('/places/:id/comments', function(req, res, next) {
     res.send('create place\'s comments');
-});
-
-router.post('/places/:id/comments/:id', function(req, res, next) {
-    res.send('create place\'s comment');
 });
 
 // PUT
