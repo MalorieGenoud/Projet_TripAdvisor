@@ -1,37 +1,34 @@
+const config = require('../config');
+
 var express = require('express');
 var router = express.Router();
 
 // ------ Model ------
 const User = require('../models/users');
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-
 // ------ Ressources TripAdvisor ------
 
 // GET
-/*
-router.get('/users/:id', function(req, res, next) {
-  res.send('user\'s profile');
+router.get('/users', function(req, res, next) {
+  User.find().sort('username').exec(function(err, users) {
+    if (err) {
+      return next(err);
+    }
+    res.send(users);
+  });
 });
-*/
 
 // POST
 router.post('/users', function(req, res, next) {
-  // res.send('create user');
+  new User(req.body).save(function(err, savedUser) {
+    if (err) {
+      return next(err);
+    }
 
-  // Create a new document from the JSON in the request body
-  const user = new User(req.body);
-
-  // Save that document
-  user.save(function (err, savedUser) {
-      if (err) {
-          return next(err);
-      }
-      // Send the saved document in the response
-      res.send(savedUser);
+      res
+      .status(201)
+      .set('Location', `${config.baseUrl}/users/${savedUser._id}`)
+      .send(savedUser);
   });
 });
 
