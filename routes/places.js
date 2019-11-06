@@ -71,8 +71,13 @@ router.put('/places/:id/comments/:id', function(req, res, next) {
 
 // DELETE
 router.delete('/places/:id', function(req, res, next) {
-    res.send('delete place');
-});
+    Place.findByIdAndRemove(req.params.id, req.body, function (err, post) {
+        if (err) {
+            return next(err);
+        }
+        res.sendStatus(204);
+    });
+   });
 
 router.delete('/places/:id/comments/:id', function(req, res, next) {
     res.send('delete place\'s comment');

@@ -43,13 +43,7 @@ const placeSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Comment',
         default: null,
-        required: false,
-        validate: {
-            // Validate that the directorId is a valid ObjectId
-            // and references an existing person
-            validator: validateComment,
-            message: function(props) { return props.reason.message; }
-        }
+        required: false
     }
 })
 
@@ -65,31 +59,6 @@ placeSchema.set('toJSON', {
 // Validate a GeoJSON coordinates array (longitude, latitude and optional altitude).
 function validateGeoJsonCoordinates(value) {
     return Array.isArray(value) && value.length >= 2 && value.length <= 3 && value[0] >= -180 && value[0] <= 180 && value[1] >= -90 && value[1] <= 90;
-}
-
-/**
- * Given a person ID, ensures that it references an existing person.
- *
- * If it's not the case or the ID is missing or not a valid object ID,
- * the "directorId" property is invalidated.
- */
-function validateComment(value) {
-    return new Promise((resolve, reject) => {
-
-        if (!ObjectId.isValid(value)) {
-            throw new Error(`commentId is not a valid Person reference`);
-        }
-
-        mongoose.model('Comment').findOne({ _id: ObjectId(value) }).exec()
-            .then((comment) => {
-                if (!comment) {
-                    throw new Error(`commentId does not reference a Comment that exists`);
-                } else {
-                    resolve(true);
-                }
-            })
-            .catch(e => { reject(e) });
-    })
 }
 
 /**
