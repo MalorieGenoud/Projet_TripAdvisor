@@ -8,17 +8,17 @@ const router = express.Router();
 
 // ------ Model ------
 const Place = require('../models/places');
+const Comment = require('../models/comments');
 
 // ------ Ressources TripAdvisor ------
 
 // GET
 router.get('/places', function(req, res, next) {
-    // res.send('all places');
-    Place.find().sort('creationDate').exec(function(err, users) {
+    Place.find().exec(function(err, places) {
         if (err) {
             return next(err);
         }
-        res.send(users);
+        res.send(places);
     });
 });
 
@@ -38,7 +38,13 @@ router.get('/places/:id', loadPlaceFromParamsMiddleware, function(req, res, next
 });
 
 router.get('/places/:id/comments', function(req, res, next) {
-    res.send('place\'s comments');
+    // res.send('place\'s comments');
+    Comment.find().exec(function(err, comments) {
+        if (err) {
+            return next(err);
+        }
+        res.send(comments);
+    });
 });
 
 // POST
@@ -57,7 +63,20 @@ router.post('/places', function(req, res, next) {
 });
 
 router.post('/places/:id/comments', function(req, res, next) {
-    res.send('create place\'s comments');
+    // res.send('create place\'s comments');
+    const comment = req.body;
+    comment.placeId = req.params.id;
+
+    new Comment(comment).save(function(err, savedComment) {
+        if (err) {
+            return next(err);
+        }
+
+        res
+            .status(201)
+            .set('Location', `${config.baseUrl}/places/:id/${savedComment._id}`)
+            .send(savedComment);
+    });
 });
 
 // PUT

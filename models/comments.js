@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const commentSchema = new mongoose.Schema({
     rating: {
         type: String,
-        required: true,
+        required: false,
         enum: ['lowest', 'average', 'maximum']
     },
     description: {
@@ -16,7 +16,7 @@ const commentSchema = new mongoose.Schema({
     },
     picture: {
         type: String,
-        required: true
+        required: false
     },
     creationDate: {
         type: Date,
@@ -27,6 +27,12 @@ const commentSchema = new mongoose.Schema({
         type: Date,
         required: true,
         default: Date.now
+    },
+    placeId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Place',
+        default: null,
+        required: false
     }
 })
 

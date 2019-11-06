@@ -38,12 +38,6 @@ const placeSchema = new mongoose.Schema({
         type: Date,
         required: true,
         default: Date.now
-    },
-    commentId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Comment',
-        default: null,
-        required: false
     }
 })
 
