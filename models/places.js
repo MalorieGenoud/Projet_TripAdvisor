@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
+const Schema = mongoose.Schema;
 
 const placeSchema = new mongoose.Schema({
     description: {
         type: String,
-        required: true
+        required: true,
+        minlength: 10,
+        maxlength: 150,
     },
     geolocation: {
         type: {
@@ -34,15 +38,70 @@ const placeSchema = new mongoose.Schema({
         type: Date,
         required: true,
         default: Date.now
+    },
+    commentId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+        default: null,
+        required: false,
+        validate: {
+            // Validate that the directorId is a valid ObjectId
+            // and references an existing person
+            validator: validateComment,
+            message: function(props) { return props.reason.message; }
+        }
     }
 })
 
 // Create a geospatial index on the location property.
 placeSchema.index({ location: '2dsphere' });
 
+// Customize the behavior of user.toJSON() (called when using res.send)
+placeSchema.set('toJSON', {
+    transform: transformJsonPlace, // Modify the serialized JSON with a custom function
+    virtuals: true // Include virtual properties when serializing documents to JSON
+});
+
 // Validate a GeoJSON coordinates array (longitude, latitude and optional altitude).
 function validateGeoJsonCoordinates(value) {
     return Array.isArray(value) && value.length >= 2 && value.length <= 3 && value[0] >= -180 && value[0] <= 180 && value[1] >= -90 && value[1] <= 90;
+}
+
+/**
+ * Given a person ID, ensures that it references an existing person.
+ *
+ * If it's not the case or the ID is missing or not a valid object ID,
+ * the "directorId" property is invalidated.
+ */
+function validateComment(value) {
+    return new Promise((resolve, reject) => {
+
+        if (!ObjectId.isValid(value)) {
+            throw new Error(`commentId is not a valid Person reference`);
+        }
+
+        mongoose.model('Comment').findOne({ _id: ObjectId(value) }).exec()
+            .then((comment) => {
+                if (!comment) {
+                    throw new Error(`commentId does not reference a Comment that exists`);
+                } else {
+                    resolve(true);
+                }
+            })
+            .catch(e => { reject(e) });
+    })
+}
+
+/**
+ * Removes extra MongoDB properties from serialized users.
+ */
+function transformJsonPlace(doc, json, options) {
+
+    // Remove MongoDB _id & __v (there's a default virtual "id" property)
+    delete json._id;
+    delete json.__v;
+
+    return json;
 }
 
 module.exports = mongoose.model('Places', placeSchema);
