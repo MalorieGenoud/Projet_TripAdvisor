@@ -16,4 +16,4 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('tripadvisor', userSchema);
+module.exports = mongoose.model('Users', userSchema);

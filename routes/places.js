@@ -1,11 +1,22 @@
+const config = require('../config');
+
 var express = require('express');
 var router = express.Router();
+
+// ------ Model ------
+const Place = require('../models/places');
 
 // ------ Ressources TripAdvisor ------
 
 // GET
-router.get('/places/', function(req, res, next) {
-    res.send('all places');
+router.get('/places', function(req, res, next) {
+    // res.send('all places');
+    Place.find().sort('creationDate').exec(function(err, users) {
+        if (err) {
+            return next(err);
+        }
+        res.send(users);
+    });
 });
 
 router.get('/places/:id', function(req, res, next) {
@@ -17,8 +28,18 @@ router.get('/places/:id/comments', function(req, res, next) {
 });
 
 // POST
-router.post('/places/', function(req, res, next) {
-    res.send('create places');
+router.post('/places', function(req, res, next) {
+    //res.send('create places');
+    new Place(req.body).save(function(err, savedPlace) {
+        if (err) {
+            return next(err);
+        }
+
+        res
+            .status(201)
+            .set('Location', `${config.baseUrl}/places/${savedPlace._id}`)
+            .send(savedPlace);
+    });
 });
 
 router.post('/places/:id/comments', function(req, res, next) {
