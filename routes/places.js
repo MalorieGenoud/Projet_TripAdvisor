@@ -138,7 +138,12 @@ router.delete('/places/:id', function (req, res, next) {
         if (err) {
             return next(err);
         }
-        res.sendStatus(204);
+        Comment.deleteMany().where('placeId').equals(req.params.id).exec(function (err, comments) {
+            if (err) {
+                return next(err);
+            }
+            res.sendStatus(204);
+        });
     });
 });
 
