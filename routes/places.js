@@ -23,8 +23,6 @@ router.get('/places', function(req, res, next) {
 });
 
 router.get('/places/:id', loadPlaceFromParamsMiddleware, function(req, res, next) {
-    //res.send('place\'s profile');
-
     countPlacesBy(req.place, function(err, places) {
         if (err) {
             return next(err);
@@ -38,8 +36,7 @@ router.get('/places/:id', loadPlaceFromParamsMiddleware, function(req, res, next
 });
 
 router.get('/places/:id/comments', function(req, res, next) {
-    // res.send('place\'s comments');
-    Comment.find().exec(function(err, comments) {
+    Comment.find().where('placeId').equals(req.params.id).exec(function(err, comments) {
         if (err) {
             return next(err);
         }
@@ -49,7 +46,6 @@ router.get('/places/:id/comments', function(req, res, next) {
 
 // POST
 router.post('/places', function(req, res, next) {
-    //res.send('create places');
     new Place(req.body).save(function(err, savedPlace) {
         if (err) {
             return next(err);
@@ -63,7 +59,6 @@ router.post('/places', function(req, res, next) {
 });
 
 router.post('/places/:id/comments', function(req, res, next) {
-    // res.send('create place\'s comments');
     const comment = req.body;
     comment.placeId = req.params.id;
 
@@ -104,17 +99,17 @@ router.delete('/places/:id/comments/:id', function(req, res, next) {
 
 // ------ FUNCTIONS ------
 /**
- * Responds with 404 Not Found and a message indicating that the person with the specified ID was not found.
+ * Responds with 404 Not Found and a message indicating that the place with the specified ID was not found.
  */
 function placeNotFound(res, placeId) {
-    return res.status(404).type('text').send(`No person found with ID ${placeId}`);
+    return res.status(404).type('text').send(`No place found with ID ${placeId}`);
 }
 
 /**
  * Given a person, asynchronously returns the number of movies directed by the person.
  */
 function countPlacesBy(place, callback) {
-    Place.countDocuments().where('commentId', place._id).exec(callback);
+    Place.countDocuments().where('placeId', place._id).exec(callback);
 }
 
 // ------ MIDDLEWARES ------
