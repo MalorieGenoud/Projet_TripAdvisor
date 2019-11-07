@@ -25,19 +25,60 @@ router.get('/places', function (req, res, next) {
         // Parse pagination parameters from URL query parameters
         const { page, pageSize } = utils.getPaginationParameters(req);
 
-        // Apply the pagination to the database query
-        query = query.skip((page - 1) * pageSize).limit(pageSize);
-
-        // Add the Link header to the response
-        utils.addLinkHeader('/places', page, pageSize, total, res);
-
-        // Execute the query
-        query.exec(function (err, movies) {
+        Place.aggregate([
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'placeId',
+                    as: 'commentedPlace'
+                }
+            },
+            {
+                $unwind:
+                {
+                    path: "$commentedPlace",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    createdAt: { $first: '$createdAt' },
+                    commentedPlace: { $sum: 1 }
+                }
+            },
+            {
+                $sort: {
+                    description: 1
+                }
+            },
+            {
+                $skip: (page - 1) * pageSize
+            },
+            {
+                $limit: pageSize
+            }
+        ], (err, places) => {
             if (err) {
                 return next(err);
             }
+            console.log(places);
 
-            res.send(movies);
+
+            // Add the Link header to the response
+            utils.addLinkHeader('/places', page, pageSize, total, res);
+
+            res.send(places.map(place => {
+
+                // Transform the aggregated object into a Mongoose model.
+                const serialized = new Place(place).toJSON();
+
+                // Add the aggregated property.
+                serialized.commentedPlace = place.commentedPlace;
+
+                return serialized;
+            }));
         });
     });
 });
