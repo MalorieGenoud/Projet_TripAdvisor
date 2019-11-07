@@ -33,6 +33,12 @@ const commentSchema = new mongoose.Schema({
         ref: 'Place',
         default: null,
         required: false
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+        required: false
     }
 })
 

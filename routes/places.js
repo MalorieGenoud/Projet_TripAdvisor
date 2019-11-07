@@ -12,16 +12,37 @@ const Comment = require('../models/comments');
 
 // ------ Ressources TripAdvisor ------
 
-// GET
+// -- GET --
+// ALL PLACES
 router.get('/places', function (req, res, next) {
-    Place.find().exec(function (err, places) {
+    Place.find().count(function (err, total) {
         if (err) {
             return next(err);
         }
-        res.send(places);
+
+        let query = Place.find();
+
+        // Parse pagination parameters from URL query parameters
+        const { page, pageSize } = utils.getPaginationParameters(req);
+
+        // Apply the pagination to the database query
+        query = query.skip((page - 1) * pageSize).limit(pageSize);
+
+        // Add the Link header to the response
+        utils.addLinkHeader('/places', page, pageSize, total, res);
+
+        // Execute the query
+        query.exec(function (err, movies) {
+            if (err) {
+                return next(err);
+            }
+
+            res.send(movies);
+        });
     });
 });
 
+// ONE PLACE
 router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, next) {
     countPlacesBy(req.place, function (err, places) {
         if (err) {
@@ -35,6 +56,7 @@ router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, nex
     });
 });
 
+// ALL PLACE'S COMMENTS
 router.get('/places/:id/comments', function (req, res, next) {
     Comment.find().where('placeId').equals(req.params.id).exec(function (err, comments) {
         if (err) {
@@ -44,7 +66,8 @@ router.get('/places/:id/comments', function (req, res, next) {
     });
 });
 
-// POST
+// -- POST --
+// CREATE ONE PLACE
 router.post('/places', function (req, res, next) {
     new Place(req.body).save(function (err, savedPlace) {
         if (err) {
@@ -58,6 +81,7 @@ router.post('/places', function (req, res, next) {
     });
 });
 
+// CREATE ONE PLACE'S COMMENT
 router.post('/places/:id/comments', function (req, res, next) {
     const comment = req.body;
     comment.placeId = req.params.id;
@@ -74,7 +98,8 @@ router.post('/places/:id/comments', function (req, res, next) {
     });
 });
 
-// PUT
+// -- PUT --
+// UPDATE ONE PLACE
 router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.place.type = req.body.type;
@@ -91,6 +116,7 @@ router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, func
     });
 });
 
+// UPDATE ONE COMMENT
 router.put('/places/:idPlace/comments/:id', utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.comment.description = req.body.description;
@@ -105,7 +131,8 @@ router.put('/places/:idPlace/comments/:id', utils.requireJson, loadCommentFromPa
     });
 });
 
-// DELETE
+// -- DELETE --
+// DELETE ONE PLACE
 router.delete('/places/:id', function (req, res, next) {
     Place.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
@@ -115,6 +142,7 @@ router.delete('/places/:id', function (req, res, next) {
     });
 });
 
+// DELETE ONE PLACE AND PLACE'S COMMENTS
 router.delete('/places/:idPlace/comments/:id', function (req, res, next) {
     Comment.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
