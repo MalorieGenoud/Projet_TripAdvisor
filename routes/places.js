@@ -13,8 +13,8 @@ const Comment = require('../models/comments');
 // ------ Ressources TripAdvisor ------
 
 // GET
-router.get('/places', function(req, res, next) {
-    Place.find().exec(function(err, places) {
+router.get('/places', function (req, res, next) {
+    Place.find().exec(function (err, places) {
         if (err) {
             return next(err);
         }
@@ -22,8 +22,8 @@ router.get('/places', function(req, res, next) {
     });
 });
 
-router.get('/places/:id', loadPlaceFromParamsMiddleware, function(req, res, next) {
-    countPlacesBy(req.place, function(err, places) {
+router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, next) {
+    countPlacesBy(req.place, function (err, places) {
         if (err) {
             return next(err);
         }
@@ -35,8 +35,8 @@ router.get('/places/:id', loadPlaceFromParamsMiddleware, function(req, res, next
     });
 });
 
-router.get('/places/:id/comments', function(req, res, next) {
-    Comment.find().where('placeId').equals(req.params.id).exec(function(err, comments) {
+router.get('/places/:id/comments', function (req, res, next) {
+    Comment.find().where('placeId').equals(req.params.id).exec(function (err, comments) {
         if (err) {
             return next(err);
         }
@@ -45,8 +45,8 @@ router.get('/places/:id/comments', function(req, res, next) {
 });
 
 // POST
-router.post('/places', function(req, res, next) {
-    new Place(req.body).save(function(err, savedPlace) {
+router.post('/places', function (req, res, next) {
+    new Place(req.body).save(function (err, savedPlace) {
         if (err) {
             return next(err);
         }
@@ -58,11 +58,11 @@ router.post('/places', function(req, res, next) {
     });
 });
 
-router.post('/places/:id/comments', function(req, res, next) {
+router.post('/places/:id/comments', function (req, res, next) {
     const comment = req.body;
     comment.placeId = req.params.id;
 
-    new Comment(comment).save(function(err, savedComment) {
+    new Comment(comment).save(function (err, savedComment) {
         if (err) {
             return next(err);
         }
@@ -75,25 +75,37 @@ router.post('/places/:id/comments', function(req, res, next) {
 });
 
 // PUT
-router.put('/places/:id', function(req, res, next) {
-    res.send('update place');
+router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
+    // Update all properties
+    req.place.type = req.body.type;
+    req.place.geolocation = req.body.geolocation;
+    req.place.description = req.body.description;
+    req.place.picture = req.body.picture;
+    req.place.lastModifDate = Date.now();
+
+    req.place.save(function (err, savedPlace) {
+        if (err) {
+            return next(err);
+        }
+        res.send(savedPlace);
+    });
 });
 
-router.put('/places/:id/comments/:id', function(req, res, next) {
+router.put('/places/:id/comments/:id', function (req, res, next) {
     res.send('update place\'s comment');
 });
 
 // DELETE
-router.delete('/places/:id', function(req, res, next) {
+router.delete('/places/:id', function (req, res, next) {
     Place.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
         }
         res.sendStatus(204);
     });
-   });
+});
 
-router.delete('/places/:id/comments/:id', function(req, res, next) {
+router.delete('/places/:id/comments/:id', function (req, res, next) {
     res.send('delete place\'s comment');
 });
 
@@ -121,7 +133,7 @@ function loadPlaceFromParamsMiddleware(req, res, next) {
         return placeNotFound(res, placeId);
     }
 
-    Place.findById(req.params.id, function(err, place) {
+    Place.findById(req.params.id, function (err, place) {
         if (err) {
             return next(err);
         } else if (!place) {
