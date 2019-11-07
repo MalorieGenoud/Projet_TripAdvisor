@@ -12,16 +12,16 @@ const userSchema = new mongoose.Schema({
         validate:
         // Manually validate uniqueness to send a "pretty" validation error
         // rather than a MongoDB duplicate key error
-            [{
-                validator: validateUsernameUniqueness,
-                message:'Username {VALUE} already exists'
-            }],
+        [{
+            validator: validateUsernameUniqueness,
+            message:'Username {VALUE} already exists'
+        }],
     },
     password: {
         type: String,
         required: true,
         minlength: 6,
-        maxlength: 20,
+        maxlength: 255,
     },
     registrationDate: {
         type: Date,
@@ -54,7 +54,7 @@ function transformJsonUser(doc, json, options) {
     // Remove MongoDB _id & __v (there's a default virtual "id" property)
     delete json._id;
     delete json.__v;
-
+    delete json.password;
     return json;
 }
 
