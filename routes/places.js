@@ -115,8 +115,14 @@ router.delete('/places/:id', function (req, res, next) {
     });
 });
 
-router.delete('/places/:id/comments/:id', function (req, res, next) {
-    res.send('delete place\'s comment');
+router.delete('/places/:idPlace/comments/:id', function (req, res, next) {
+    Comment.findByIdAndRemove(req.params.id, req.body, function (err, post) {
+        if (err) {
+            return next(err);
+        }
+        res.sendStatus(204);
+    });
+    
 });
 
 // ------ FUNCTIONS ------
