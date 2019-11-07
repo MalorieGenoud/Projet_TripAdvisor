@@ -91,8 +91,18 @@ router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, func
     });
 });
 
-router.put('/places/:id/comments/:id', function (req, res, next) {
-    res.send('update place\'s comment');
+router.put('/places/:idPlace/comments/:id', utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
+    // Update all properties
+    req.comment.description = req.body.description;
+    req.comment.picture = req.body.picture;
+    req.comment.lastModifDate = Date.now();
+
+    req.comment.save(function (err, savedComment) {
+        if (err) {
+            return next(err);
+        }
+        res.send(savedComment);
+    });
 });
 
 // DELETE
@@ -115,6 +125,10 @@ router.delete('/places/:id/comments/:id', function (req, res, next) {
  */
 function placeNotFound(res, placeId) {
     return res.status(404).type('text').send(`No place found with ID ${placeId}`);
+}
+
+function commentNotFound(res, commentId) {
+    return res.status(404).type('text').send(`No comment found with ID ${commentId}`);
 }
 
 /**
@@ -141,6 +155,25 @@ function loadPlaceFromParamsMiddleware(req, res, next) {
         }
 
         req.place = place;
+        next();
+    });
+}
+
+function loadCommentFromParamsMiddleware(req, res, next) {
+
+    const commentId = req.params.id;
+    if (!ObjectId.isValid(commentId)) {
+        return commentNotFound(res, commentId);
+    }
+
+    Comment.findById(req.params.id, function (err, comment) {
+        if (err) {
+            return next(err);
+        } else if (!comment) {
+            return commentNotFound(res, commentId);
+        }
+
+        req.comment = comment;
         next();
     });
 }
