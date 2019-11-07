@@ -4,9 +4,9 @@ const Schema = mongoose.Schema;
 
 const commentSchema = new mongoose.Schema({
     rating: {
-        type: String,
-        required: false,
-        enum: ['lowest', 'average', 'maximum']
+        type: Number,
+        min: 0,
+        max: 10
     },
     description: {
         type: String,

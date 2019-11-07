@@ -58,14 +58,25 @@ router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, nex
 
 // ALL PLACE'S COMMENTS
 router.get('/places/:id/comments', function (req, res, next) {
-    Comment.find().where('placeId').equals(req.params.id).exec(function (err, comments) {
+    // Count total comment matching the URL query parameters
+    const countQuery = queryComments(req);
+    countQuery.count(function (err, total) {
         if (err) {
             return next(err);
         }
-        res.send(comments);
+
+        // Prepare the initial database query from the URL query parameters
+        let query = queryComments(req);
+
+        query.exec(function (err, comments) {
+            if (err) {
+                return next(err);
+            }
+            res.send(comments);
+
+        });
     });
 });
-
 // -- POST --
 // CREATE ONE PLACE
 router.post('/places', function (req, res, next) {
@@ -155,7 +166,7 @@ router.delete('/places/:idPlace/comments/:id', function (req, res, next) {
         }
         res.sendStatus(204);
     });
-    
+
 });
 
 // ------ FUNCTIONS ------
@@ -215,6 +226,35 @@ function loadCommentFromParamsMiddleware(req, res, next) {
         req.comment = comment;
         next();
     });
+}
+
+/**
+ * Returns a Mongoose query that will retrieve comments filtered with the URL query parameters.
+ */
+function queryComments(req) {
+
+    let query = Comment.find();
+
+    if (Array.isArray(req.query.placeId)) {
+        const places = req.query.placeId.filter(ObjectId.isValid);
+        query = query.where('placeId').in(places);
+    } else if (ObjectId.isValid(req.query.placeId)) {
+        query = query.where('placeId').equals(req.query.placeId);
+    }
+
+    if (!isNaN(req.query.rating)) {
+        query = query.where('rating').equals(req.query.rating);
+    }
+
+    if (!isNaN(req.query.ratedAtLeast)) {
+        query = query.where('rating').gte(req.query.ratedAtLeast);
+    }
+
+    if (!isNaN(req.query.ratedAtMost)) {
+        query = query.where('rating').lte(req.query.ratedAtMost);
+    }
+
+    return query;
 }
 
 module.exports = router;
