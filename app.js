@@ -50,17 +50,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-//jsonwebtoken
-/*
-const secretKey = process.env.SECRET_KEY || 'tripadvisor';
-const exp = (new Date().getTime() + 7 * 24 * 3600 * 1000) / 1000;
-
-// Create and sign a token.
-jwt.sign({ sub: 'Karim Rochat', exp: exp }, secretKey, function(err, token) {
-  //
-});
-jwt.verify(token, secretKey, function(err, payload) {
-  //
-});
-*/
 module.exports = app;
