@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var jwt = require('jsonwebtoken');
+
 
 // All routes
 const indexRouter = require('./routes/index');
@@ -47,4 +49,17 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+//jsonwebtoken
+/*
+const secretKey = process.env.SECRET_KEY || 'secret';
+const exp = (new Date().getTime() + 7 * 24 * 3600 * 1000) / 1000;
+
+// Create and sign a token.
+jwt.sign({ sub: 'Karim Rochat', exp: exp }, secretKey, function(err, token) {
+  secretKey
+});
+jwt.verify(token, secretKey, function(err, payload) {
+  secretKey
+});
+*/
 module.exports = app;
