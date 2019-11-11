@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var jwt = require('jsonwebtoken');
+var bcrypt = require('bcrypt');
 
 
 // All routes
@@ -51,15 +52,15 @@ app.use(function(err, req, res, next) {
 
 //jsonwebtoken
 /*
-const secretKey = process.env.SECRET_KEY || 'secret';
+const secretKey = process.env.SECRET_KEY || 'tripadvisor';
 const exp = (new Date().getTime() + 7 * 24 * 3600 * 1000) / 1000;
 
 // Create and sign a token.
 jwt.sign({ sub: 'Karim Rochat', exp: exp }, secretKey, function(err, token) {
-  secretKey
+  //
 });
 jwt.verify(token, secretKey, function(err, payload) {
-  secretKey
+  //
 });
 */
 module.exports = app;

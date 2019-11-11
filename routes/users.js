@@ -1,7 +1,10 @@
 const config = require('../config');
 
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcrypt');
 var express = require('express');
 var router = express.Router();
+var secretKey = process.env.SECRET_KEY || 'tripadvisor';
 
 // ------ Model ------
 const User = require('../models/users');
@@ -10,12 +13,12 @@ const User = require('../models/users');
 
 // GET
 router.get('/users', function(req, res, next) {
-  User.find().sort('username').exec(function(err, users) {
-    if (err) {
-      return next(err);
-    }
-    res.send(users);
-  });
+    User.find().sort('username').exec(function(err, users) {
+        if (err) {
+            return next(err);
+        }
+        res.send(users);
+    });
 });
 
 // POST
@@ -52,6 +55,14 @@ router.post('/login', function(req, res, next) {
             }
             res.send(`Welcome ${user.username}!`);
         });
+        /*
+        // Generate a valid JWT which expires in 7 days.
+        const exp = (new Date().getTime() + 7 * 24 * 3600 * 1000) / 1000;
+        const claims = { sub: user._id.toString(), exp: exp };
+        jwt.sign(claims, secretKey, function(err, token) {
+            if (err) { return next(err); }
+            res.send({ token: token }); // Send the token to the client.
+        });*/
     })
 });
 
