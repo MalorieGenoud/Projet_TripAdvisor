@@ -7,6 +7,7 @@ var router = express.Router();
 
 // ------ Model ------
 const User = require('../models/users');
+const Comment = require('../models/comments');
 
 // ------ Ressources TripAdvisor ------
 
@@ -73,10 +74,18 @@ router.put('/users/:id', function(req, res, next) {
 */
 
 // DELETE
-/*
 router.delete('/users/:id', function(req, res, next) {
-  res.send('delete user');
+    User.findByIdAndRemove(req.params.id, req.body, function (err, post) {
+        if (err) {
+            return next(err);
+        }
+        Comment.deleteMany().where('userId').equals(req.params.id).exec(function (err, comments) {
+            if (err) {
+                return next(err);
+            }
+            res.sendStatus(204);
+        });
+    });
 });
-*/
 
 module.exports = router;

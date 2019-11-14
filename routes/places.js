@@ -128,39 +128,6 @@ router.get('/places', function (req, res, next) {
     });
 });
 
-
-/* SANS AGGREGATION
-router.get('/places', function (req, res, next) {
-    Place.find().count(function (err, total) {
-        if (err) {
-            return next(err);
-        }
-
-        let query = Place.find();
-
-        // Parse pagination parameters from URL query parameters
-        const { page, pageSize } = utils.getPaginationParameters(req);
-
-        // Apply the pagination to the database query
-        query = query.skip((page - 1) * pageSize).limit(pageSize);
-
-        // Add the Link header to the response
-        utils.addLinkHeader('/places', page, pageSize, total, res);
-
-        // Execute the query
-        query.exec(function (err, places) {
-            if (err) {
-                return next(err);
-            }
-
-            
-
-            res.send(places);
-        });
-    });
-});
-*/
-
 // ONE PLACE
 router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, next) {
     countPlacesBy(req.place, function (err, places) {
