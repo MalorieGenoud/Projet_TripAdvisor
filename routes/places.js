@@ -6,8 +6,10 @@ const utils = require('./utils');
 const users = require('./users');
 var jwt = require('jsonwebtoken');
 var secretKey = process.env.SECRET_KEY || 'tripadvisor';
-
 const router = express.Router();
+
+// ------ WEBSOCKET ------
+const webSocket = require('../dispatcher');
 
 // ------ Model ------
 const Place = require('../models/places');
@@ -16,8 +18,6 @@ const Comment = require('../models/comments');
 // ------ Ressources TripAdvisor ------
 
 //Fonction authenticate
-
-
 function authenticate(req, res, next) {
     // Ensure the header is present.
     const authorization = req.get('Authorization');
@@ -40,7 +40,6 @@ function authenticate(req, res, next) {
         }
     });
 }
-
 
 // -- GET --
 // ALL PLACES
@@ -111,6 +110,9 @@ router.get('/places', function (req, res, next) {
             }
             console.log(places);
 
+            const nbPlaces = places.length;
+
+            webSocket.nbPlaces(nbPlaces);
 
             // Add the Link header to the response
             utils.addLinkHeader('/places', page, pageSize, total, res);
@@ -159,8 +161,12 @@ router.get('/places/:id/comments', function (req, res, next) {
             if (err) {
                 return next(err);
             }
-            res.send(comments);
 
+            const nbComments = comments.length;
+
+            webSocket.nbComments(nbComments);
+
+            res.send(comments);
         });
     });
 });
