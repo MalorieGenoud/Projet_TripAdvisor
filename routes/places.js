@@ -329,12 +329,7 @@ function queryComments(req) {
 
     let query = Comment.find();
 
-    if (Array.isArray(req.query.placeId)) {
-        const places = req.query.placeId.filter(ObjectId.isValid);
-        query = query.where('placeId').in(places);
-    } else if (ObjectId.isValid(req.query.placeId)) {
-        query = query.where('placeId').equals(req.query.placeId);
-    }
+    query = query.where('placeId').equals(req.params.id);
 
     if (!isNaN(req.query.rating)) {
         query = query.where('rating').equals(req.query.rating);
