@@ -132,7 +132,7 @@ router.get('/places', function (req, res, next) {
 });
 
 // ONE PLACE
-router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, next) {
+router.get('/places/:id', authenticate, loadPlaceFromParamsMiddleware, function (req, res, next) {
     countPlacesBy(req.place, function (err, places) {
         if (err) {
             return next(err);
@@ -173,7 +173,7 @@ router.get('/places/:id/comments', function (req, res, next) {
 
 // -- POST --
 // CREATE ONE PLACE
-router.post('/places', function (req, res, next) {
+router.post('/places', authenticate, function (req, res, next) {
     new Place(req.body).save(function (err, savedPlace) {
         if (err) {
             return next(err);
@@ -187,7 +187,7 @@ router.post('/places', function (req, res, next) {
 });
 
 // CREATE ONE PLACE'S COMMENT
-router.post('/places/:id/comments', function (req, res, next) {
+router.post('/places/:id/comments', authenticate, function (req, res, next) {
     const comment = req.body;
     comment.placeId = req.params.id;
 
@@ -205,7 +205,7 @@ router.post('/places/:id/comments', function (req, res, next) {
 
 // -- PUT --
 // UPDATE ONE PLACE
-router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
+router.put('/places/:id', authenticate, utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.place.type = req.body.type;
     req.place.geolocation = req.body.geolocation;
@@ -222,7 +222,7 @@ router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, func
 });
 
 // UPDATE ONE COMMENT
-router.put('/places/:idPlace/comments/:id', utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
+router.put('/places/:idPlace/comments/:id', authenticate, utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.comment.description = req.body.description;
     req.comment.picture = req.body.picture;
@@ -238,7 +238,7 @@ router.put('/places/:idPlace/comments/:id', utils.requireJson, loadCommentFromPa
 
 // -- DELETE --
 // DELETE ONE PLACE
-router.delete('/places/:id', function (req, res, next) {
+router.delete('/places/:id', authenticate, function (req, res, next) {
     Place.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
@@ -253,7 +253,7 @@ router.delete('/places/:id', function (req, res, next) {
 });
 
 // DELETE ONE PLACE AND PLACE'S COMMENTS
-router.delete('/places/:idPlace/comments/:id', function (req, res, next) {
+router.delete('/places/:idPlace/comments/:id', authenticate, function (req, res, next) {
     Comment.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
