@@ -5,6 +5,9 @@ var bcrypt = require('bcrypt');
 var express = require('express');
 var router = express.Router();
 
+// ------ WEBSOCKET ------
+const webSocket = require('../dispatcher');
+
 // ------ Model ------
 const User = require('../models/users');
 const Comment = require('../models/comments');
@@ -17,6 +20,11 @@ router.get('/users', function(req, res, next) {
         if (err) {
             return next(err);
         }
+
+        const nbUsers = users.length;
+
+        webSocket.nbUsers(nbUsers);
+
         res.send(users);
     });
 });
