@@ -89,6 +89,7 @@ router.get('/places', function (req, res, next) {
                     description: { $first: '$description' },
                     picture: { $first: '$picture' },
                     createdAt: { $first: '$createdAt' },
+                    geolocation: { $first: '$geolocation' },
                     lastModifDate: { $first: '$lastModifDate' },
                     commentedPlace: { $sum: '$commentedPlace' }
                 }
