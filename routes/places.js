@@ -55,6 +55,7 @@ router.get('/places', function (req, res, next) {
         // Parse pagination parameters from URL query parameters
         const { page, pageSize } = utils.getPaginationParameters(req);
 
+        // Aggregation
         Place.aggregate([
             {
                 $lookup: {
@@ -72,10 +73,24 @@ router.get('/places', function (req, res, next) {
                 }
             },
             {
+                $set: {
+                    commentedPlace: {
+                    $cond: {
+                      if: '$commentedPlace',
+                      then: 1,
+                      else: 0
+                    }
+                  }
+                }
+              },
+            {
                 $group: {
                     _id: '$_id',
+                    description: { $first: '$description' },
+                    picture: { $first: '$picture' },
                     createdAt: { $first: '$createdAt' },
-                    commentedPlace: { $sum: 1 }
+                    lastModifDate: { $first: '$lastModifDate' },
+                    commentedPlace: { $sum: '$commentedPlace' }
                 }
             },
             {
@@ -113,8 +128,41 @@ router.get('/places', function (req, res, next) {
     });
 });
 
+
+/* SANS AGGREGATION
+router.get('/places', function (req, res, next) {
+    Place.find().count(function (err, total) {
+        if (err) {
+            return next(err);
+        }
+
+        let query = Place.find();
+
+        // Parse pagination parameters from URL query parameters
+        const { page, pageSize } = utils.getPaginationParameters(req);
+
+        // Apply the pagination to the database query
+        query = query.skip((page - 1) * pageSize).limit(pageSize);
+
+        // Add the Link header to the response
+        utils.addLinkHeader('/places', page, pageSize, total, res);
+
+        // Execute the query
+        query.exec(function (err, places) {
+            if (err) {
+                return next(err);
+            }
+
+            
+
+            res.send(places);
+        });
+    });
+});
+*/
+
 // ONE PLACE
-router.get('/places/:id', authenticate, loadPlaceFromParamsMiddleware, function (req, res, next) {
+router.get('/places/:id', loadPlaceFromParamsMiddleware, function (req, res, next) {
     countPlacesBy(req.place, function (err, places) {
         if (err) {
             return next(err);
@@ -151,7 +199,7 @@ router.get('/places/:id/comments', function (req, res, next) {
 
 // -- POST --
 // CREATE ONE PLACE
-router.post('/places', authenticate, function (req, res, next) {
+router.post('/places', function (req, res, next) {
     new Place(req.body).save(function (err, savedPlace) {
         if (err) {
             return next(err);
@@ -165,7 +213,7 @@ router.post('/places', authenticate, function (req, res, next) {
 });
 
 // CREATE ONE PLACE'S COMMENT
-router.post('/places/:id/comments', authenticate, function (req, res, next) {
+router.post('/places/:id/comments', function (req, res, next) {
     const comment = req.body;
     comment.placeId = req.params.id;
 
@@ -183,7 +231,7 @@ router.post('/places/:id/comments', authenticate, function (req, res, next) {
 
 // -- PUT --
 // UPDATE ONE PLACE
-router.put('/places/:id', authenticate, utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
+router.put('/places/:id', utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.place.type = req.body.type;
     req.place.geolocation = req.body.geolocation;
@@ -200,7 +248,7 @@ router.put('/places/:id', authenticate, utils.requireJson, loadPlaceFromParamsMi
 });
 
 // UPDATE ONE COMMENT
-router.put('/places/:idPlace/comments/:id', authenticate, utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
+router.put('/places/:idPlace/comments/:id', utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.comment.description = req.body.description;
     req.comment.picture = req.body.picture;
@@ -216,7 +264,7 @@ router.put('/places/:idPlace/comments/:id', authenticate, utils.requireJson, loa
 
 // -- DELETE --
 // DELETE ONE PLACE
-router.delete('/places/:id', authenticate, function (req, res, next) {
+router.delete('/places/:id', function (req, res, next) {
     Place.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
@@ -231,7 +279,7 @@ router.delete('/places/:id', authenticate, function (req, res, next) {
 });
 
 // DELETE ONE PLACE AND PLACE'S COMMENTS
-router.delete('/places/:idPlace/comments/:id', authenticate, function (req, res, next) {
+router.delete('/places/:idPlace/comments/:id', function (req, res, next) {
     Comment.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
