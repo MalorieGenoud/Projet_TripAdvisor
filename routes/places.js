@@ -74,14 +74,14 @@ router.get('/places', function (req, res, next) {
             {
                 $set: {
                     commentedPlace: {
-                    $cond: {
-                      if: '$commentedPlace',
-                      then: 1,
-                      else: 0
+                        $cond: {
+                            if: '$commentedPlace',
+                            then: 1,
+                            else: 0
+                        }
                     }
-                  }
                 }
-              },
+            },
             {
                 $group: {
                     _id: '$_id',

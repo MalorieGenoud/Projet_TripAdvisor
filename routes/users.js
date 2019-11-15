@@ -1,3 +1,4 @@
+
 const config = require('../config');
 
 var jwt = require('jsonwebtoken');
@@ -100,7 +101,7 @@ router.post('/login', function(req, res, next) {
 
 // PUT
 /*
-router.put('/users/:id', function(req, res, next) {
+router.put('/users/:id', authenticate, function(req, res, next) {
   res.send('update user\'s profile');
 });
 */
