@@ -4,11 +4,16 @@ const app = require('../app');
 const mongoose = require('mongoose');
 const { cleanUpDatabaseUser } = require('./utils');
 const User = require('../models/users');
+const Comment = require('../models/comments');
+const jwt = require('jsonwebtoken');
+var config = require('../config');
+var express = require('express');
+const router = express.Router();
 
 
 beforeEach(cleanUpDatabaseUser);
 
-//TEST POUR GET DES USERS
+//TEST POUR GET DES USERS SUR LA ROUTE /USERS
 describe('GET /users', function() {
 
     beforeEach(async function() {
@@ -52,7 +57,7 @@ describe('GET /users', function() {
 });
 
 
-//TEST POUR POST UN USER
+//TEST POUR POST UN USER SUR LA ROUTE /USERS
 describe('POST /users', function() {
 
     it('should create a user', async function() {
@@ -72,6 +77,35 @@ describe('POST /users', function() {
         expect(req.body.registrationDate).to.be.a('string')
         expect(req.body).to.have.all.keys('id', 'username', 'registrationDate');
     });
+});
+
+
+//TEST POUR DELETE UN USER SUR LA ROUTE USERS/:ID
+describe('DELETE /users', function() {
+
+    var user;
+    var comment;
+    beforeEach(async function() {
+        user = await User.create({ username: 'Karim Rochat', password: '123456' });
+        comment = await Comment.create({rating: 5, description: 'Une commentaire de test'})
+    });
+
+    it('should not delete a user if not authenticated', async function() {
+        const res = await supertest(app)
+        .delete('/users/'+ user._id)
+        .expect(401);
+    });
+
+    it('should delete a user', async function() {
+        const exp = (new Date().getTime() + 7 * 24 * 3600 * 1000) / 1000;
+        const claims = {sub: user._id.toString(), exp: exp};
+        const token = jwt.sign(claims, config.secretKey);
+
+        const res = await supertest(app)
+        .delete('/users/'+ user._id)
+        .set('Authorization', 'Bearer ' + token)
+        .expect(204)
+        });
 });
 
 after(mongoose.disconnect);
