@@ -27,7 +27,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>2/2</span>
+        <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -134,7 +134,18 @@
 <a name='L86'></a><a href='#L86'>86</a>
 <a name='L87'></a><a href='#L87'>87</a>
 <a name='L88'></a><a href='#L88'>88</a>
-<a name='L89'></a><a href='#L89'>89</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -149,8 +160,10 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -164,13 +177,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -230,26 +252,37 @@ const User = require('../models/users');
 const Comment = require('../models/comments');
 const mongoose = require('mongoose');
 const { cleanUpDatabasePlace } = require('./utils');
+const { cleanUpDatabaseUser } = require('./utils');
 const jwt = require('jsonwebtoken');
-const secretKey = process.env.SECRET_KEY || 'tripadvisor';
 var config = require('../config');
 var express = require('express');
 const router = express.Router();
 &nbsp;
+beforeEach(cleanUpDatabaseUser);
 beforeEach(cleanUpDatabasePlace);
 &nbsp;
 describe('PUT /places', function() {
+&nbsp;
     var user;
     var place;
     beforeEach(async function() {
         user = await User.create({ username: 'Karim Rochat', password: '123456' });
-        place = await Place.create({description: 'Place générée à chaque test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"})
+        place = await Place.create({description: 'Place de test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"})
     });
 &nbsp;
     it('should not update a place if not authenticated', async function() {
         const res = await supertest(app)
         .put('/places/'+ place._id)
-        .expect(401);
+        .send({
+            description: "Description updated",
+            geolocation: {
+                type: "Point",
+                coordinates: [-50, 50]
+            },
+            picture: "https://fotomelia.com/wp-content/uploads/edd/2015/03/maison-ic%C3%B4ne-1560x1518.png"
+        })
+        .expect(401)
+        .expect('Content-Type', 'text/html; charset=utf-8');
     });
 &nbsp;
     it('should update a place', async function() {
@@ -258,7 +291,7 @@ describe('PUT /places', function() {
         const token = jwt.sign(claims, config.secretKey);
 &nbsp;
         const res = await supertest(app)
-        const req = await supertest(app)
+        //const req = await supertest(app)
         .put('/places/'+ place._id)
         .send({
             description: "Description updated",
@@ -307,7 +340,7 @@ describe('DELETE /places', function() {
         .delete('/places/'+ place._id)
         .set('Authorization', 'Bearer ' + token)
         .expect(204)
-    });
+        });
 });
 &nbsp;
 after(mongoose.disconnect);</pre></td></tr>
@@ -316,7 +349,7 @@ after(mongoose.disconnect);</pre></td></tr>
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Nov 15 2019 21:08:36 GMT+0100 (GMT+01:00)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sat Nov 16 2019 18:31:28 GMT+0100 (GMT+01:00)
 </div>
 </div>
 <script src="..\..\prettify.js"></script>

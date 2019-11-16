@@ -6,26 +6,37 @@ const User = require('../models/users');
 const Comment = require('../models/comments');
 const mongoose = require('mongoose');
 const { cleanUpDatabasePlace } = require('./utils');
+const { cleanUpDatabaseUser } = require('./utils');
 const jwt = require('jsonwebtoken');
-const secretKey = process.env.SECRET_KEY || 'tripadvisor';
 var config = require('../config');
 var express = require('express');
 const router = express.Router();
 
+beforeEach(cleanUpDatabaseUser);
 beforeEach(cleanUpDatabasePlace);
 
 describe('PUT /places', function() {
+
     var user;
     var place;
     beforeEach(async function() {
         user = await User.create({ username: 'Karim Rochat', password: '123456' });
-        place = await Place.create({description: 'Place générée à chaque test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"})
+        place = await Place.create({description: 'Place de test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"})
     });
 
     it('should not update a place if not authenticated', async function() {
         const res = await supertest(app)
         .put('/places/'+ place._id)
-        .expect(401);
+        .send({
+            description: "Description updated",
+            geolocation: {
+                type: "Point",
+                coordinates: [-50, 50]
+            },
+            picture: "https://fotomelia.com/wp-content/uploads/edd/2015/03/maison-ic%C3%B4ne-1560x1518.png"
+        })
+        .expect(401)
+        .expect('Content-Type', 'text/html; charset=utf-8');
     });
 
     it('should update a place', async function() {
@@ -34,7 +45,7 @@ describe('PUT /places', function() {
         const token = jwt.sign(claims, config.secretKey);
 
         const res = await supertest(app)
-        const req = await supertest(app)
+        //const req = await supertest(app)
         .put('/places/'+ place._id)
         .send({
             description: "Description updated",
@@ -59,6 +70,7 @@ describe('PUT /places', function() {
 
 
 describe('DELETE /places', function() {
+
     var user;
     var place;
     var comment;

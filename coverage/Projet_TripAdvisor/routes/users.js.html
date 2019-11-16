@@ -20,24 +20,24 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">40.91% </span>
+        <span class="strong">19.7% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>27/66</span>
+        <span class='fraction'>13/66</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">11.54% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>3/26</span>
+        <span class='fraction'>0/26</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">35.71% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>5/14</span>
+        <span class='fraction'>0/14</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">41.54% </span>
+        <span class="strong">20% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>27/65</span>
+        <span class='fraction'>13/65</span>
       </div>
     </div>
     <p class="quiet">
@@ -213,34 +213,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -336,35 +336,35 @@ function <span class="fstat-no" title="function not covered" >authenticate(</spa
 }
 &nbsp;
 // GET
-router.get('/users', function(req, res, next) {
-    User.find().sort('username').exec(function(err, users) {
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
+router.get('/users', <span class="fstat-no" title="function not covered" >fu</span>nction(req, res, next) {
+<span class="cstat-no" title="statement not covered" >    User.find().sort('username').exec(<span class="fstat-no" title="function not covered" >fu</span>nction(err, users) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) {</span>
 <span class="cstat-no" title="statement not covered" >            return next(err);</span>
         }
 &nbsp;
-        const nbUsers = users.length;
+        const nbUsers = <span class="cstat-no" title="statement not covered" >users.length;</span>
 &nbsp;
-        webSocket.nbUsers(nbUsers);
+<span class="cstat-no" title="statement not covered" >        webSocket.nbUsers(nbUsers);</span>
 &nbsp;
-        res.send(users);
+<span class="cstat-no" title="statement not covered" >        res.send(users);</span>
     });
 });
 &nbsp;
 // POST
-router.post('/users', function(req, res, next) {
-    const plainPassword = req.body.password;
-    const saltRounds = 10;
-    bcrypt.hash(plainPassword, saltRounds, function(err, hashedPassword) {
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
+router.post('/users', <span class="fstat-no" title="function not covered" >fu</span>nction(req, res, next) {
+    const plainPassword = <span class="cstat-no" title="statement not covered" >req.body.password;</span>
+    const saltRounds = <span class="cstat-no" title="statement not covered" >10;</span>
+<span class="cstat-no" title="statement not covered" >    bcrypt.hash(plainPassword, saltRounds, <span class="fstat-no" title="function not covered" >fu</span>nction(err, hashedPassword) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) {</span>
 <span class="cstat-no" title="statement not covered" >            return next(err);</span>
         }
-        const newUser = new User(req.body);
-        newUser.password = hashedPassword;
-        newUser.save(function(err, savedUser) {
-            <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
+        const newUser = <span class="cstat-no" title="statement not covered" >new User(req.body);</span>
+<span class="cstat-no" title="statement not covered" >        newUser.password = hashedPassword;</span>
+<span class="cstat-no" title="statement not covered" >        newUser.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, savedUser) {</span>
+<span class="cstat-no" title="statement not covered" >            if (err) {</span>
 <span class="cstat-no" title="statement not covered" >                return next(err);</span>
             }
-            res.send(savedUser);
+<span class="cstat-no" title="statement not covered" >            res.send(savedUser);</span>
         });
     });
 });
@@ -424,7 +424,7 @@ module.exports = router;
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Nov 15 2019 21:08:36 GMT+0100 (GMT+01:00)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sat Nov 16 2019 18:31:28 GMT+0100 (GMT+01:00)
 </div>
 </div>
 <script src="..\..\prettify.js"></script>
