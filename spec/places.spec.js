@@ -136,13 +136,13 @@ describe('DELETE /places', function() {
         comment = await Comment.create({rating: 5, description: 'Une commentaire de test'})
     });
 
-    it('should not delete a place\'s comments if not authenticated', async function() {
+    it('should not delete a place if not authenticated', async function() {
         const res = await supertest(app)
         .delete('/places/'+ place._id)
         .expect(401);
     });
 
-    it('should delete a place\'s comments', async function() {
+    it('should delete a place comments', async function() {
         const exp = (new Date().getTime() + 7 * 24 * 3600 * 1000) / 1000;
         const claims = {sub: user._id.toString(), exp: exp};
         const token = jwt.sign(claims, config.secretKey);
