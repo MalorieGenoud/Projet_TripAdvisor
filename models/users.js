@@ -1,7 +1,10 @@
+// ------ REQUIRE ------
 const mongoose = require('mongoose');
-const ObjectId = mongoose.Types.ObjectId;
-const Schema = mongoose.Schema;
 
+// ------ SCHEMA ------
+/**
+ * Create schema for table users
+ */
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -10,8 +13,7 @@ const userSchema = new mongoose.Schema({
         maxlength: 15,
         unique: true,
         validate:
-        // Manually validate uniqueness to send a "pretty" validation error
-        // rather than a MongoDB duplicate key error
+        // Create a validation if the username already exists
         [{
             validator: validateUsernameUniqueness,
             message:'Username {VALUE} already exists'
@@ -28,17 +30,21 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     }
-})
+});
 
-// Customize the behavior of user.toJSON() (called when using res.send)
+/**
+ * Customize the behavior of user.toJSON() (called when using res.send)
+ */
 userSchema.set('toJSON', {
     transform: transformJsonUser, // Modify the serialized JSON with a custom function
     virtuals: true // Include virtual properties when serializing documents to JSON
 });
 
+
+// ------ FUNCTIONS ------
 /**
- * Given a name, calls the callback function with true if no user exists with that name
- * (or the only person that exists is the same as the person being validated).
+ * If we create a user with the same username as an existing one, there an error message
+ * Otherwise there is no error message if it doesn't already exist
  */
 function validateUsernameUniqueness(value) {
     return this.constructor.findOne().where('username').equals(value).exec().then((existingUser) => {

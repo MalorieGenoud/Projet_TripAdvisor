@@ -1,58 +1,36 @@
+// ------ REQUIRE ------
 const config = require('../config');
 const express = require('express');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const utils = require('./utils');
-const users = require('./users');
-var jwt = require('jsonwebtoken');
-var secretKey = process.env.SECRET_KEY || 'tripadvisor';
 const router = express.Router();
 
-// ------ WEBSOCKET ------
-const webSocket = require('../dispatcher');
+// ------ FUNCTIONS AND MIDDLEWARES ------
+const func = require('../functions/functions')
 
-// ------ Model ------
+// ------ WEBSOCKET ------
+const webSocket = require('../websocket/dispatcher');
+
+// ------ MODELS ------
 const Place = require('../models/places');
 const Comment = require('../models/comments');
 
-// ------ Ressources TripAdvisor ------
-
-//Fonction authenticate
-function authenticate(req, res, next) {
-    // Ensure the header is present.
-    const authorization = req.get('Authorization');
-    if (!authorization) {
-        return res.status(401).send('Authorization header is missing');
-    }
-    // Check that the header has the correct format.
-    const match = authorization.match(/^Bearer (.+)$/);
-    if (!match) {
-        return res.status(401).send('Authorization header is not a bearer token');
-    }
-    // Extract and verify the JWT.
-    const token = match[1];
-    jwt.verify(token, secretKey, function(err, payload) {
-        if (err) {
-            return res.status(401).send('Your token is invalid or has expired');
-        } else {
-            req.currentUserId = payload.sub;
-            next(); // Pass the ID of the authenticated user to the next middleware.
-        }
-    });
-}
-
-// -- GET --
-// ALL PLACES
+// ------ RESOURCES TRIPADVISOR ------
+/**
+ * Show all places
+ * Add a aggregation to count comments for a place
+ * Example : http://localhost:3000/places
+ * Pagination
+ * Example : http://localhost:3000/places?pageSize=3
+ */
 router.get('/places', function (req, res, next) {
     Place.find().count(function (err, total) {
         if (err) {
             return next(err);
         }
 
-        let query = Place.find();
-
         // Parse pagination parameters from URL query parameters
-        const { page, pageSize } = utils.getPaginationParameters(req);
+        const { page, pageSize } = func.getPaginationParameters(req);
 
         // Aggregation
         Place.aggregate([
@@ -66,10 +44,10 @@ router.get('/places', function (req, res, next) {
             },
             {
                 $unwind:
-                {
-                    path: "$commentedPlace",
-                    preserveNullAndEmptyArrays: true
-                }
+                    {
+                        path: "$commentedPlace",
+                        preserveNullAndEmptyArrays: true
+                    }
             },
             {
                 $set: {
@@ -110,12 +88,12 @@ router.get('/places', function (req, res, next) {
             }
             console.log(places);
 
-            const nbPlaces = places.length;
-
-            webSocket.nbPlaces(nbPlaces);
-
             // Add the Link header to the response
-            utils.addLinkHeader('/places', page, pageSize, total, res);
+            func.addLinkHeader('/places', page, pageSize, total, res);
+
+            // Websocket
+            const nbPlaces = places.length;
+            webSocket.nbPlaces(nbPlaces);
 
             res.send(places.map(place => {
 
@@ -131,39 +109,36 @@ router.get('/places', function (req, res, next) {
     });
 });
 
-// ONE PLACE
-router.get('/places/:id', authenticate, loadPlaceFromParamsMiddleware, function (req, res, next) {
-    countPlacesBy(req.place, function (err, places) {
-        if (err) {
-            return next(err);
-        }
-
-        res.send({
-            ...req.place.toJSON(),
-            places
-        });
-    });
+/**
+ * Show a place with specific id
+ * Example : http://localhost:3000/places/1
+ */
+router.get('/places/:id', func.loadPlaceFromParamsMiddleware, function (req, res, next) {
+    res.send(req.place);
 });
 
-// ALL PLACE'S COMMENTS
+/**
+ * Show all comments for a specific place and count total comment matching the URL query parameters
+ * Example : http://localhost:3000/places/1/comments
+ */
 router.get('/places/:id/comments', function (req, res, next) {
     // Count total comment matching the URL query parameters
-    const countQuery = queryComments(req);
+    const countQuery = func.queryComments(req);
     countQuery.count(function (err, total) {
         if (err) {
             return next(err);
         }
 
         // Prepare the initial database query from the URL query parameters
-        let query = queryComments(req);
+        let query = func.queryComments(req);
 
         query.exec(function (err, comments) {
             if (err) {
                 return next(err);
             }
 
+            // Websocket
             const nbComments = comments.length;
-
             webSocket.nbComments(nbComments);
 
             res.send(comments);
@@ -172,8 +147,21 @@ router.get('/places/:id/comments', function (req, res, next) {
 });
 
 // -- POST --
-// CREATE ONE PLACE
-router.post('/places', authenticate, function (req, res, next) {
+/**
+ * Create a place
+ * Example : http://localhost:3000/places
+ * Example body for Postman :
+  {
+       "description": "First place",
+       "geolocation":
+       {
+            "type": "Point",
+            "coordinates": [ -73.856077, 40.848447 ]
+       },
+        "picture": "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"
+  }
+ */
+router.post('/places', func.authenticate, function (req, res, next) {
     new Place(req.body).save(function (err, savedPlace) {
         if (err) {
             return next(err);
@@ -186,8 +174,19 @@ router.post('/places', authenticate, function (req, res, next) {
     });
 });
 
-// CREATE ONE PLACE'S COMMENT
-router.post('/places/:id/comments', authenticate, function (req, res, next) {
+/**
+ * Create a comment for a specific place
+ * Example : http://localhost:3000/places/1/comments
+ * Example body for Postman :
+  {
+        "rating": "10",
+        "description": "The first comment for this place",
+        "placeId": "5dcd1439c765493dc4753225",
+        "userId": "5dcd105be779eb461454319a"
+  }
+ */
+router.post('/places/:id/comments', func.authenticate, function (req, res, next) {
+    // Recover the place's id
     const comment = req.body;
     comment.placeId = req.params.id;
 
@@ -204,8 +203,21 @@ router.post('/places/:id/comments', authenticate, function (req, res, next) {
 });
 
 // -- PUT --
-// UPDATE ONE PLACE
-router.put('/places/:id', authenticate, utils.requireJson, loadPlaceFromParamsMiddleware, function (req, res, next) {
+/**
+ * Update a place
+ * Example : http://localhost:3000/places
+ * Example body for Postman :
+ {
+       "description": "First place updated",
+       "geolocation":
+       {
+            "type": "Point",
+            "coordinates": [ -73.856077, 40.848447 ]
+       },
+        "picture": "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"
+  }
+ */
+router.put('/places/:id', func.authenticate, func.requireJson, func.loadPlaceFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.place.type = req.body.type;
     req.place.geolocation = req.body.geolocation;
@@ -221,8 +233,18 @@ router.put('/places/:id', authenticate, utils.requireJson, loadPlaceFromParamsMi
     });
 });
 
-// UPDATE ONE COMMENT
-router.put('/places/:idPlace/comments/:id', authenticate, utils.requireJson, loadCommentFromParamsMiddleware, function (req, res, next) {
+/**
+ * Update a specific comment for a specific place
+ * Example : http://localhost:3000/places/1/comments/1
+ * Example body for Postman :
+  {
+        "rating": "10",
+        "description": "The first comment for this place updated",
+        "placeId": "5dcd1439c765493dc4753225",
+        "userId": "5dcd105be779eb461454319a"
+  }
+ */
+router.put('/places/:idPlace/comments/:id', func.authenticate, func.requireJson, func.loadCommentFromParamsMiddleware, function (req, res, next) {
     // Update all properties
     req.comment.description = req.body.description;
     req.comment.picture = req.body.picture;
@@ -237,8 +259,11 @@ router.put('/places/:idPlace/comments/:id', authenticate, utils.requireJson, loa
 });
 
 // -- DELETE --
-// DELETE ONE PLACE
-router.delete('/places/:id', authenticate, function (req, res, next) {
+/**
+ * Delete a place
+ * Example : http://localhost:3000/places/1
+ */
+router.delete('/places/:id', func.authenticate, function (req, res, next) {
     Place.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
@@ -252,98 +277,17 @@ router.delete('/places/:id', authenticate, function (req, res, next) {
     });
 });
 
-// DELETE ONE PLACE AND PLACE'S COMMENTS
-router.delete('/places/:idPlace/comments/:id', authenticate, function (req, res, next) {
+/**
+ * Delete a specific comment for a specific place
+ * Example : http://localhost:3000/places/1/comments/1
+ */
+router.delete('/places/:idPlace/comments/:id', func.authenticate, function (req, res, next) {
     Comment.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);
         }
         res.sendStatus(204);
     });
-
 });
-
-// ------ FUNCTIONS ------
-/**
- * Responds with 404 Not Found and a message indicating that the place with the specified ID was not found.
- */
-function placeNotFound(res, placeId) {
-    return res.status(404).type('text').send(`No place found with ID ${placeId}`);
-}
-
-function commentNotFound(res, commentId) {
-    return res.status(404).type('text').send(`No comment found with ID ${commentId}`);
-}
-
-/**
- * Given a person, asynchronously returns the number of movies directed by the person.
- */
-function countPlacesBy(place, callback) {
-    Place.countDocuments().where('placeId', place._id).exec(callback);
-}
-
-// ------ MIDDLEWARES ------
-
-function loadPlaceFromParamsMiddleware(req, res, next) {
-
-    const placeId = req.params.id;
-    if (!ObjectId.isValid(placeId)) {
-        return placeNotFound(res, placeId);
-    }
-
-    Place.findById(req.params.id, function (err, place) {
-        if (err) {
-            return next(err);
-        } else if (!place) {
-            return placeNotFound(res, placeId);
-        }
-
-        req.place = place;
-        next();
-    });
-}
-
-function loadCommentFromParamsMiddleware(req, res, next) {
-
-    const commentId = req.params.id;
-    if (!ObjectId.isValid(commentId)) {
-        return commentNotFound(res, commentId);
-    }
-
-    Comment.findById(req.params.id, function (err, comment) {
-        if (err) {
-            return next(err);
-        } else if (!comment) {
-            return commentNotFound(res, commentId);
-        }
-
-        req.comment = comment;
-        next();
-    });
-}
-
-/**
- * Returns a Mongoose query that will retrieve comments filtered with the URL query parameters.
- */
-function queryComments(req) {
-
-    let query = Comment.find();
-
-    query = query.where('placeId').equals(req.params.id);
-
-    if (!isNaN(req.query.rating)) {
-        query = query.where('rating').equals(req.query.rating);
-    }
-
-    if (!isNaN(req.query.ratedAtLeast)) {
-        query = query.where('rating').gte(req.query.ratedAtLeast);
-    }
-
-    if (!isNaN(req.query.ratedAtMost)) {
-        query = query.where('rating').lte(req.query.ratedAtMost);
-    }
-
-    return query;
-}
 
 module.exports = router;

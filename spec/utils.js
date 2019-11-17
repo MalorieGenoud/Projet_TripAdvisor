@@ -1,3 +1,4 @@
+// ------ REQUIRE ------
 const User = require('../models/users');
 const Place = require('../models/places');
 const Comment = require('../models/comments');

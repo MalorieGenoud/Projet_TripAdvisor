@@ -1,60 +1,46 @@
-
+// ------ REQUIRE ------
 const config = require('../config');
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-var jwt = require('jsonwebtoken');
-var bcrypt = require('bcrypt');
-var express = require('express');
-var router = express.Router();
+// ------ FUNCTIONS AND MIDDLEWARES ------
+const func = require('../functions/functions');
 
 // ------ WEBSOCKET ------
-const webSocket = require('../dispatcher');
+const webSocket = require('../websocket/dispatcher');
 
-// ------ Model ------
+// ------ MODELS ------
 const User = require('../models/users');
 const Comment = require('../models/comments');
 
-// ------ Ressources TripAdvisor ------
-
-//Fonction authenticate
-function authenticate(req, res, next) {
-    // Ensure the header is present.
-    const authorization = req.get('Authorization');
-    if (!authorization) {
-        return res.status(401).send('Authorization header is missing');
-    }
-    // Check that the header has the correct format.
-    const match = authorization.match(/^Bearer (.+)$/);
-    if (!match) {
-        return res.status(401).send('Authorization header is not a bearer token');
-    }
-    // Extract and verify the JWT.
-    const token = match[1];
-    jwt.verify(token, config.secretKey, function(err, payload) {
-        if (err) {
-            return res.status(401).send('Your token is invalid or has expired');
-        } else {
-            req.currentUserId = payload.sub;
-            next(); // Pass the ID of the authenticated user to the next middleware.
-        }
-    });
-}
-
-// GET
+// ------ RESOURCES TRIPADVISOR ------
+/**
+ * GET
+ * Show all users
+ * Example URL: http://localhost:3000/users
+ */
 router.get('/users', function(req, res, next) {
-    User.find().sort('username').exec(function(err, users) {
+    User.find().exec(function(err, users) {
         if (err) {
             return next(err);
         }
 
+        // Websocket
         const nbUsers = users.length;
-
         webSocket.nbUsers(nbUsers);
 
         res.send(users);
     });
 });
 
-// POST
+/**
+ * POST
+ * Create a user
+ * Example URL : http://localhost:3000/users
+ * Example body : {"username": "toto", "password": "123456"}
+ */
 router.post('/users', function(req, res, next) {
     const plainPassword = req.body.password;
     const saltRounds = 10;
@@ -73,7 +59,12 @@ router.post('/users', function(req, res, next) {
     });
 });
 
-router.post('/login', function(req, res, next) {
+/**
+ * POST
+ * Connexion with a user's credential
+ * Example URL : http://localhost:3000/users/login
+ */
+router.post('/users/login', function(req, res, next) {
     User.findOne({ username: req.body.username }).exec(function(err, user) {
         if (err) {
             return next(err);
@@ -86,7 +77,6 @@ router.post('/login', function(req, res, next) {
             } else if (!valid) {
                 return res.sendStatus(401);
             }
-            res.send(`Welcome ${user.username}!`);
         });
 
         // Generate a valid JWT which expires in 7 days.
@@ -99,15 +89,12 @@ router.post('/login', function(req, res, next) {
     })
 });
 
-// PUT
-/*
-router.put('/users/:id', authenticate, function(req, res, next) {
-  res.send('update user\'s profile');
-});
-*/
-
-// DELETE
-router.delete('/users/:id', authenticate, function(req, res, next) {
+/**
+ * DELETE
+ * Delete a user with a specific id
+ * Example : http://localhost:3000/users/1
+ */
+router.delete('/users/:id', func.authenticate, function(req, res, next) {
     User.findByIdAndRemove(req.params.id, req.body, function (err, post) {
         if (err) {
             return next(err);

@@ -1,7 +1,10 @@
+// ------ REQUIRE ------
 const mongoose = require('mongoose');
-const ObjectId = mongoose.Types.ObjectId;
-const Schema = mongoose.Schema;
 
+// ------ SCHEMA ------
+/**
+ * Create schema for table places
+ */
 const placeSchema = new mongoose.Schema({
     description: {
         type: String,
@@ -18,7 +21,7 @@ const placeSchema = new mongoose.Schema({
         coordinates: {
             type: [ Number ],
             required: true,
-            // Va permettre de valider le format qu'on lui mets
+            // Allows to validate the format we pass to it
             validate: {
                 validator: validateGeoJsonCoordinates,
                 message: '{VALUE} is not a valid longitude/latitude(/altitude) coordinates array'
@@ -39,7 +42,7 @@ const placeSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     }
-})
+});
 
 // Create a geospatial index on the location property.
 placeSchema.index({ location: '2dsphere' });
@@ -50,7 +53,10 @@ placeSchema.set('toJSON', {
     virtuals: true // Include virtual properties when serializing documents to JSON
 });
 
-// Validate a GeoJSON coordinates array (longitude, latitude and optional altitude).
+// ------ FUNCTIONS ------
+/**
+ * Validate a GeoJSON coordinates array (longitude, latitude and optional altitude).
+ */
 function validateGeoJsonCoordinates(value) {
     return Array.isArray(value) && value.length >= 2 && value.length <= 3 && value[0] >= -180 && value[0] <= 180 && value[1] >= -90 && value[1] <= 90;
 }

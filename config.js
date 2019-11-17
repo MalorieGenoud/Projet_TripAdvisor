@@ -5,6 +5,7 @@ exports.secretKey = process.env.SECRET_KEY || 'tripadvisor';
 
 const { getLogger } = require('log4js');
 
+// ------ WEBSOCKET ------
 /**
  * Creates a named logger for the application.
  * @param {string} name - The logger's name (will be part of each log line).

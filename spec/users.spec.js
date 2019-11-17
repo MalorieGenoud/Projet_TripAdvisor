@@ -1,3 +1,4 @@
+// ------ REQUIRE ------
 const { expect } = require('chai');
 const supertest = require('supertest');
 const app = require('../app');
@@ -6,10 +7,8 @@ const { cleanUpDatabaseUser } = require('./utils');
 const User = require('../models/users');
 const Comment = require('../models/comments');
 const jwt = require('jsonwebtoken');
-var config = require('../config');
-var express = require('express');
-const router = express.Router();
-
+const config = require('../config');
+const express = require('express');
 
 beforeEach(cleanUpDatabaseUser);
 
@@ -83,11 +82,11 @@ describe('POST /users', function() {
 //TEST POUR DELETE UN USER SUR LA ROUTE USERS/:ID
 describe('DELETE /users', function() {
 
-    var user;
-    var comment;
+    let user;
+    let comment;
     beforeEach(async function() {
         user = await User.create({ username: 'Karim Rochat', password: '123456' });
-        comment = await Comment.create({rating: 5, description: 'Une commentaire de test'})
+        comment = await Comment.create({rating: 5, description: 'Un commentaire de test'})
     });
 
     it('should not delete a user if not authenticated', async function() {

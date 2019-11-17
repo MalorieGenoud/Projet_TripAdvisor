@@ -1,7 +1,11 @@
+// ------ REQUIRE ------
 const mongoose = require('mongoose');
-const ObjectId = mongoose.Types.ObjectId;
 const Schema = mongoose.Schema;
 
+// ------ SCHEMA ------
+/**
+ * Create schema for table comments
+ */
 const commentSchema = new mongoose.Schema({
     rating: {
         type: Number,
@@ -28,6 +32,7 @@ const commentSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
+    // Foreign keys
     placeId: {
         type: Schema.Types.ObjectId,
         ref: 'Place',
@@ -40,7 +45,7 @@ const commentSchema = new mongoose.Schema({
         default: null,
         required: false
     }
-})
+});
 
 // Customize the behavior of user.toJSON() (called when using res.send)
 commentSchema.set('toJSON', {
@@ -48,7 +53,7 @@ commentSchema.set('toJSON', {
     virtuals: true // Include virtual properties when serializing documents to JSON
 });
 
-
+// ------ FUNCTIONS ------
 /**
  * Removes extra MongoDB properties from serialized users.
  */

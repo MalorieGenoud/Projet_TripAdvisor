@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+// ------ REQUIRE ------
 const supertest = require('supertest');
 const app = require('../app');
 const Place = require('../models/places');
@@ -8,9 +8,8 @@ const mongoose = require('mongoose');
 const { cleanUpDatabasePlace } = require('./utils');
 const { cleanUpDatabaseUser } = require('./utils');
 const jwt = require('jsonwebtoken');
-var config = require('../config');
-var express = require('express');
-const router = express.Router();
+const config = require('../config');
+const express = require('express');
 
 beforeEach(cleanUpDatabaseUser);
 beforeEach(cleanUpDatabasePlace);
@@ -19,7 +18,7 @@ beforeEach(cleanUpDatabasePlace);
 //TEST POUR POST UNE PLACE SUR LA ROUTE /PLACES
 describe('POST /places', function() {
 
-    var user;
+    let user;
     beforeEach(async function() {
         user = await User.create({ username: 'Karim Rochat', password: '123456' })
     });
@@ -28,7 +27,7 @@ describe('POST /places', function() {
         const res = await supertest(app)
         .post('/places')
         .send({
-            description: "Une place de test",
+            description: "Un lieu de test",
             geolocation: {
                 type: "Point",
                 coordinates: [-70, 50]
@@ -72,11 +71,11 @@ describe('POST /places', function() {
 //TEST POUR PUT UNE PLACE SUR LA ROUTE /PLACES/:ID
 describe('PUT /places', function() {
 
-    var user;
-    var place;
+    let user;
+    let place;
     beforeEach(async function() {
         user = await User.create({ username: 'Karim Rochat', password: '123456' });
-        place = await Place.create({description: 'Une place de test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"})
+        place = await Place.create({description: 'Un lieu de test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"})
     });
 
     it('should not update a place if not authenticated', async function() {
@@ -127,13 +126,13 @@ describe('PUT /places', function() {
 //TEST POUR DELETE UNE PLACE SUR LA ROUTE /PLACES/:ID
 describe('DELETE /places', function() {
 
-    var user;
-    var place;
-    var comment;
+    let user;
+    let place;
+    let comment;
     beforeEach(async function() {
         user = await User.create({ username: 'Karim Rochat', password: '123456' });
-        place = await Place.create({description: 'Une place de test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"});
-        comment = await Comment.create({rating: 5, description: 'Une commentaire de test'})
+        place = await Place.create({description: 'Un lieu de test', geolocation: {type: "Point", coordinates: [ -70, 50 ]}, picture: "https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png"});
+        comment = await Comment.create({rating: 5, description: 'Un commentaire de test'})
     });
 
     it('should not delete a place if not authenticated', async function() {

@@ -4,10 +4,10 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('my-app:server');
-var http = require('http');
-const { createBackendDispatcher } = require('../dispatcher');
+const app = require('../app');
+const debug = require('debug')('my-app:server');
+const http = require('http');
+const { createBackendDispatcher } = require('../websocket/dispatcher');
 
 /**
  * Get port from environment and store in Express.
@@ -20,7 +20,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+const server = http.createServer(app);
 
 createBackendDispatcher(server);
 /**
