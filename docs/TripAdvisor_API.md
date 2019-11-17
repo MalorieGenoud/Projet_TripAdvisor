@@ -35,10 +35,28 @@ npm i --save mongoose
 
 ### 3.2 Démarrer le Projet
 
+Dans un premier temps, ouvrez votre invite de commande et copier/coller la ligne suivante :
+```bash
+"C:\Program Files\MongoDB\Server\4.2\bin\mongod.exe"
+```
+
+Ceci va permettre d'exécuter **MongoDB** et ainsi de pouvoir travailler avec la base de données.
+
+Ensuite allez dans votre dossier contenant le clone du repo git et exécutez **git bash**. Exécutez la ligne suivante :
+```bash
+DEBUG=Projet_TripAdvisor:* nodemon
+```
+
+Ceci va permettre d'exécuter le code en mode développeur et donc de prendre en compte les changements qui sont faits.
+
+Il est possible que certains packages ne soient pas installés, pour cela il vous suffit d'excécuter la ligne suivante :
+```bash
+npm i --save nomDuPackage
+```
 
 ### 3.3 Architecture
 
-Voic un schéma représentant l'architecture du dossier.
+Voic un schéma représentant l'architecture du dossier (on ne représente que les dossiers importants).
 
 ![alt-text](architecture.png)
 
@@ -49,6 +67,8 @@ Voic un schéma représentant l'architecture du dossier.
 - Le dossier **routes** contient les fichiers de nos routes
   - Nom des fichiers : *users.js* et *places.js*
   - Le fichier *index.js* n'est pas utilisé
+- Le dossier **spec** contiens les fichiers de tests automatisés
+  - Nom des fichiers : *places.spec.js*, *users.spec.js* et *utils.js*
 - Le dossier **websocket** contient notre dispatcher
   - Nom du fichier : *dispatcher.js*
 
