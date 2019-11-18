@@ -230,6 +230,10 @@ Si vous souhaitez tester les *routes*, il est possible de les effectuer avec les
 - En local : http://localhost:3000/
 - URL de Heroku : https://comem-archioweb-2019-2020-d.herokuapp.com/
 
+Pour Heroku, un utilisateur a été créé (ainsi que des lieux et des commentaires) si vous souhaitez l'utiliser pour tester l'application :
+- username : toto
+- password : 123456
+
 ##### 3.4.3.1 Users
 
 1. GET
