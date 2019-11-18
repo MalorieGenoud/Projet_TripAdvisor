@@ -56,12 +56,12 @@ exports.queryComments = function(req) {
         query = query.where('rating').equals(req.query.rating);
     }
 
-    if (!isNaN(req.query.ratedAtMost)) {
-        query = query.where('rating').gte(req.query.ratedAtMost);
+    if (!isNaN(req.query.ratedAtLeast)) {
+        query = query.where('rating').gte(req.query.ratedAtLeast);
     }
 
-    if (!isNaN(req.query.ratedAtLeast)) {
-        query = query.where('rating').lte(req.query.ratedAtLeast);
+    if (!isNaN(req.query.ratedAtMost)) {
+        query = query.where('rating').lte(req.query.ratedAtMost);
     }
 
     return query;
