@@ -11,7 +11,7 @@ Ce projet a été réalisé dans le cadre de la HEIG-VD, en 3ème année d’ing
 - [Postman](https://www.getpostman.com/)
 
 ## 3. Projet
-### 3.1 Installation
+### 3.1 Installation (local)
 
 Avant de commencer, voici une marche à suivre pour installer le projet en local. Dans un premier temps, faîtes un *git clone* du repo dans le dossier que vous souhaitez :
 ```bash
@@ -33,7 +33,7 @@ npm i --save mongodb
 npm i --save mongoose
 ```
 
-### 3.2 Démarrer le Projet
+### 3.2 Démarrer le Projet (local)
 
 Dans un premier temps, ouvrez votre invite de commande et copier/coller la ligne suivante :
 ```bash
@@ -225,6 +225,10 @@ const commentSchema = new mongoose.Schema({
 ```
 
 #### 3.4.3 Routes
+
+Si vous souhaitez tester les *routes*, il est possible de les effectuer avec les URLs suivantes :
+- En local : http://localhost:3000/
+- URL de Heroku : https://comem-archioweb-2019-2020-d.herokuapp.com/
 
 ##### 3.4.3.1 Users
 
