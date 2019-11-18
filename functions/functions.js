@@ -83,9 +83,6 @@ exports.requireJson = function(req, res, next) {
 
 /**
  * Parses the pagination parameters (i.e. page & page size) from the request.
- *
- * @param {ExpressRequest} req - The Express request object
- * @returns An object with "page" and "pageSize" properties
  */
 exports.getPaginationParameters = function(req) {
 
@@ -106,12 +103,6 @@ exports.getPaginationParameters = function(req) {
 
 /**
  * Adds a Link header to the response (if applicable).
- *
- * @param {String} resourceHref - The hyperlink reference of the collection (e.g. "/api/people")
- * @param {Number} page - The page being listed
- * @param {Number} pageSize - The page size
- * @param {Number} total - The total number of elements
- * @param {ExpressResponse} res - The Exprss response object
  */
 exports.addLinkHeader = function(resourceHref, page, pageSize, total, res) {
 
@@ -136,17 +127,20 @@ exports.addLinkHeader = function(resourceHref, page, pageSize, total, res) {
     if (Object.keys(links).length >= 1) {
         res.set('Link', formatLinkHeader(links));
     }
-}
+};
 
 // ------ MIDDLEWARES ------
 // -- FUNCTIONS --
 /**
- * Display an 404 error if the place or the comment isn't found
+ * Display an 404 error if the place or the place isn't found
  */
 function placeNotFound(res, placeId) {
     return res.status(404).type('text').send(`No place found with ID ${placeId}`);
 }
 
+/**
+ * Display an 404 error if the place or the comment isn't found
+ */
 function commentNotFound(res, commentId) {
     return res.status(404).type('text').send(`No comment found with ID ${commentId}`);
 }
@@ -169,7 +163,7 @@ exports.loadPlaceFromParamsMiddleware = function(req, res, next) {
         req.place = place;
         next();
     });
-}
+};
 
 exports.loadCommentFromParamsMiddleware = function(req, res, next) {
 
@@ -188,4 +182,4 @@ exports.loadCommentFromParamsMiddleware = function(req, res, next) {
         req.comment = comment;
         next();
     });
-}
+};

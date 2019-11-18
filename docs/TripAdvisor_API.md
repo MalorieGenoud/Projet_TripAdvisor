@@ -714,9 +714,120 @@ exports.queryComments = function(req) {
 
 Les fonctions suivantes vont permettre de créer la pagination.
 
+La fonction *requireJson* va répondre avec un message *415 Unsupported Media Type* si la requête n'a pas l'application Content-Type/json.
+```javascript
+exports.requireJson = function(req, res, next) {
+    if (req.is('application/json')) {
+        return next();
+    }
+
+    const error = new Error('This resource only has an application/json representation');
+    error.status = 415; // 415 Unsupported Media Type
+    next(error);
+};
+```
+
+La fonction *getPaginationParametres* va permettre de gérer les paramètres que nous allons lui passer, comme le fait qu'une page ne peut pas être inférieur à 1 et que la taille de la page ne peut pas être inférieur à 0 ou plus grand que 100.
+```javascript
+exports.getPaginationParameters = function(req) {
+
+    // Parse the "page" URL query parameter indicating the index of the first element that should be in the response
+    let page = parseInt(req.query.page, 10);
+    if (isNaN(page) || page < 1) {
+        page = 1;
+    }
+
+    // Parse the "pageSize" URL query parameter indicating how many elements should be in the response
+    let pageSize = parseInt(req.query.pageSize, 10);
+    if (isNaN(pageSize) || pageSize < 0 || pageSize > 100) {
+        pageSize = 100;
+    }
+
+    return { page, pageSize };
+};
+```
+
+La fonction *addLinkHeader* va permettre de gérer ce qu'on passe dans le *header*
+```javascript
+exports.addLinkHeader = function(resourceHref, page, pageSize, total, res) {
+
+    const links = {};
+    const url = config.baseUrl + resourceHref;
+    const maxPage = Math.ceil(total / pageSize);
+
+    // Add first & prev links if current page is not the first one
+    if (page > 1) {
+        links.first = { rel: 'first', url: `${url}?page=1&pageSize=${pageSize}` };
+        links.prev = { rel: 'prev', url: `${url}?page=${page - 1}&pageSize=${pageSize}` };
+    }
+
+    // Add next & last links if current page is not the last one
+    if (page < maxPage) {
+        links.next = { rel: 'next', url: `${url}?page=${page + 1}&pageSize=${pageSize}` };
+        links.last = { rel: 'last', url: `${url}?page=${maxPage}&pageSize=${pageSize}` };
+    }
+
+    // If there are any links (i.e. if there is more than one page),
+    // add the Link header to the response
+    if (Object.keys(links).length >= 1) {
+        res.set('Link', formatLinkHeader(links));
+    }
+};
+```
+
 ##### 3.4.4.4 Middlewares
 
-Les fonctions suivantes vont permettre, que ce soit p
+Les fonctions suivantes vont permettre, que ce soit pour les lieux ou les commentaires, d'afficher un message d'erreur lorsque l'*id* n'est pas trouvé.
+```javascript
+function placeNotFound(res, placeId) {
+    return res.status(404).type('text').send(`No place found with ID ${placeId}`);
+}
+
+function commentNotFound(res, commentId) {
+    return res.status(404).type('text').send(`No comment found with ID ${commentId}`);
+}
+```
+
+Les Middlewares suivants vont permettre de gérer le fait qu'on veuille trouver un *id* spécifique, que ce soit pour un lieu ou un commentaire.
+```javascript
+exports.loadPlaceFromParamsMiddleware = function(req, res, next) {
+
+    const placeId = req.params.id;
+    if (!ObjectId.isValid(placeId)) {
+        return placeNotFound(res, placeId);
+    }
+
+    Place.findById(req.params.id, function (err, place) {
+        if (err) {
+            return next(err);
+        } else if (!place) {
+            return placeNotFound(res, placeId);
+        }
+
+        req.place = place;
+        next();
+    });
+};
+
+exports.loadCommentFromParamsMiddleware = function(req, res, next) {
+
+    const commentId = req.params.id;
+    if (!ObjectId.isValid(commentId)) {
+        return commentNotFound(res, commentId);
+    }
+
+    Comment.findById(req.params.id, function (err, comment) {
+        if (err) {
+            return next(err);
+        } else if (!comment) {
+            return commentNotFound(res, commentId);
+        }
+
+        req.comment = comment;
+        next();
+    });
+};
+```
 
 #### 3.4.5 Websocket
 
