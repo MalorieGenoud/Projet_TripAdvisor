@@ -50,7 +50,7 @@ router.get('/places', function (req, res, next) {
                     }
             },
             {
-                $set: {
+                $addFields: {
                     commentedPlace: {
                         $cond: {
                             if: '$commentedPlace',
