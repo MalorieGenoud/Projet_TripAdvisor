@@ -22,7 +22,7 @@
         "mongodb": "^3.3.3",
         "mongoose": "^5.7.8",
         "morgan": "~1.9.1",
-        "ws": "^7.2.0"
+        "ws": "^7.4.6"
     },
     "devDependencies": {
         "cross-env": "^5.2.1",
